@@ -1,0 +1,19 @@
+{
+  "manifest_version": 3,
+  "name": "Audio Ad Muter",
+  "version": "0.1.0",
+  "description": "Detects and mutes known audio ads in a selected browser tab (local-first)",
+  "minimum_chrome_version": "120",
+  "permissions": [
+    "tabCapture",
+    "offscreen",
+    "storage"
+  ],
+  "background": {
+    "service_worker": "service-worker.js"
+  },
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_title": "Audio Ad Muter"
+  }
+}

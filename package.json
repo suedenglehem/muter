@@ -1,0 +1,17 @@
+{
+  "name": "audio-ad-muter",
+  "version": "0.1.0",
+  "description": "Local-first Chrome extension that detects and mutes known audio ads in a selected tab",
+  "private": true,
+  "scripts": {
+    "build": "node build.mjs",
+    "watch": "node build.mjs --watch",
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.0",
+    "typescript": "^5.8.0",
+    "@types/chrome": "^0.0.319",
+    "rimraf": "^6.0.0"
+  }
+}

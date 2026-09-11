@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Audio Ad Muter</title>
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <h1>Muter</h1>
+      <span id="status-badge" class="badge badge-stopped">STOPPED</span>
+    </header>
+
+    <!-- Level Meter -->
+    <section class="level-section">
+      <label>Input Level</label>
+      <div class="meter-bar">
+        <div id="level-fill" class="meter-fill"></div>
+        <div id="peak-marker" class="peak-marker"></div>
+      </div>
+      <span id="level-value" class="level-text">0.0 dB</span>
+    </section>
+
+    <!-- Controls -->
+    <section class="controls">
+      <button id="btn-start" class="btn btn-primary">Start Monitoring</button>
+      <button id="btn-stop" class="btn btn-danger" disabled>Stop</button>
+    </section>
+
+    <!-- Gain / Mute Controls -->
+    <section class="mute-controls" id="mute-section" style="display:none;">
+      <div class="row">
+        <button id="btn-mute" class="btn btn-warn">Mute</button>
+        <button id="btn-unmute" class="btn btn-success" disabled>Hear Audio</button>
+      </div>
+      <div class="row override-row" id="override-section" style="display:none;">
+        <span id="override-countdown" class="countdown">60s</span>
+        <button id="btn-cancel-override" class="btn btn-small">Cancel Override</button>
+      </div>
+    </section>
+
+    <!-- Status Info -->
+    <section class="info-section">
+      <div id="session-info" class="info-row">
+        <span>Session:</span> <code id="session-id">—</code>
+      </div>
+      <div id="gain-info" class="info-row">
+        <span>Gain:</span> <code id="gain-value">1.0</code>
+      </div>
+    </section>
+
+    <!-- Error Display -->
+    <section id="error-section" class="error-section" style="display:none;">
+      <p id="error-text"></p>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+      <span class="version">v0.1.0 — M1 Audio Pipeline</span>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
