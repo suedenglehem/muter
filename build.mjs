@@ -10,7 +10,7 @@ const src = join(root, "src");
 
 // Ensure dist exists
 mkdirSync(dist, { recursive: true });
-mkdirSync(join(dist, "offscreen"), { recursive: true });
+mkdirSync(join(dist, "audio"), { recursive: true });
 mkdirSync(join(dist, "worklet"), { recursive: true });
 mkdirSync(join(dist, "popup"), { recursive: true });
 
@@ -36,10 +36,10 @@ const entries = [
     ...commonOptions,
     format: "iife",
   },
-  // Offscreen document script
+  // Audio page script (hidden extension page that owns tabCapture + graph)
   {
-    entryPoints: [join(src, "offscreen/offscreen.ts")],
-    outfile: join(dist, "offscreen/offscreen.js"),
+    entryPoints: [join(src, "audio/audio.ts")],
+    outfile: join(dist, "audio/audio.js"),
     ...commonOptions,
     format: "iife",
   },
@@ -72,7 +72,7 @@ async function build() {
   // Copy static assets
   const staticFiles = [
     { from: join(src, "manifest.json"), to: join(dist, "manifest.json") },
-    { from: join(src, "offscreen/offscreen.html"), to: join(dist, "offscreen/offscreen.html") },
+    { from: join(src, "audio/audio.html"), to: join(dist, "audio/audio.html") },
     { from: join(src, "popup/popup.html"), to: join(dist, "popup/popup.html") },
     { from: join(src, "popup/popup.css"), to: join(dist, "popup/popup.css") },
   ];

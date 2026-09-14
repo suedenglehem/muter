@@ -54,10 +54,10 @@ Then reload the extension at `chrome://extensions` after each rebuild.
 ```
 src/
 ├── manifest.json              # Chrome MV3 manifest
-├── service-worker.ts          # Background: commands, offscreen lifecycle, state
-├── offscreen/
-│   ├── offscreen.html         # Offscreen document page
-│   └── offscreen.ts           # Audio graph, gain control, watchdog
+├── service-worker.ts          # Background: commands, audio-page lifecycle, state
+├── audio/
+│   ├── audio.html             # Hidden extension page (background tab)
+│   └── audio.ts               # tabCapture, audio graph, gain control, watchdog
 ├── worklet/
 │   └── analysis-worklet.ts    # AudioWorklet: level metering, silent output
 ├── popup/
@@ -73,12 +73,18 @@ src/
 ```
 Captured tab MediaStream
   → MediaStreamAudioSourceNode
-     ├→ AudioWorklet (analysis) → silent sink [gain=0, no destination]
+     ├→ AudioWorklet (analysis) → silent sink [gain=0] → destination
      └→ GainNode (playback control) → AudioContext.destination
 ```
+(The silent sink **must** reach the destination: the render thread only pulls
+nodes reachable from it, so a dead-end analysis chain would never run.)
 
-- **Service Worker**: user commands, offscreen lifecycle, session identity. No DSP.
-- **Offscreen Document**: owns MediaStream, AudioContext, audio graph, gain, watchdog.
+- **Service Worker**: user commands, audio-page lifecycle, session identity. No DSP.
+- **Audio Page** (a hidden extension page opened as a background tab): owns
+  `tabCapture`, the MediaStream, AudioContext, audio graph, gain, and watchdog.
+  This is required because `chrome.tabCapture` is not exposed in offscreen
+  documents or the service worker, and the SW has no `AudioContext` — the
+  extension page is the only context with both.
 - **AudioWorklet**: bounded PCM level computation; emits silence to avoid duplicate playback.
 - **Popup UI**: controls, status badge, level meter, error display.
 
@@ -90,18 +96,25 @@ Captured tab MediaStream
 | 15ms linear ramp on gain changes | Reduces clicks; within PRD's 5–20ms range |
 | Worklet outputs zeros to silent sink | Avoids duplicate playback on analysis branch |
 | Watchdog checks every 500ms, fails open at 2s | Restores audibility if worklet stalls |
-| Offscreen kept alive between start/stop | Faster restart; no re-creation overhead |
+| Audio lives in a hidden **extension page**, not an offscreen document | `chrome.tabCapture` doesn't exist in offscreen docs / SW; the extension page is the only context with both `tabCapture` and `AudioContext` (verified on Chrome 153) |
+| `tabCapture.capture({audio:true}, cb)` (callback form, no `targetTabId`) | Current Chrome signature: `capture()` takes a callback and captures the active tab; `targetTabId` only exists on `getMediaStreamId` |
+| Audio page kept alive between start/stop | Faster restart; liveness checked by a broadcast `AUDIO_PAGE_PING` (survives SW restarts, no `tabs` permission needed) |
 | esbuild as bundler | Minimal config, fast, handles TS natively |
 
 ## Permissions
 
 | Permission | Purpose |
 |------------|---------|
-| `tabCapture` | Capture audio from selected tab |
-| `offscreen` | Create hidden document for AudioContext |
+| `tabCapture` | Capture audio from the active tab |
 | `storage` | Persist settings (M2+) |
 
-No microphone permission, no broad host access.
+No microphone permission, no broad host access, no `tabs` permission (the audio
+page is a normal extension page the SW opens via `chrome.tabs.create`).
+
+> **Note:** Chrome requires the extension to be *invoked* on a tab before tab
+> capture is allowed (an anti-abuse gate tied to a real user click). Opening the
+> Muter popup on the tab satisfies this — so Start only works after the user has
+> opened the popup on the tab they want captured.
 
 ## Testing Checklist (Manual — M1)
 
@@ -124,9 +137,9 @@ The `dist/` folder contains a ready-to-load unpacked extension:
 dist/
 ├── manifest.json
 ├── service-worker.js
-├── offscreen/
-│   ├── offscreen.html
-│   └── offscreen.js
+├── audio/
+│   ├── audio.html
+│   └── audio.js
 ├── worklet/
 │   └── analysis-worklet.js
 └── popup/

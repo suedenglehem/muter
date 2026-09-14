@@ -14,12 +14,23 @@ export enum MessageType {
   HEAR_AUDIO_NOW = "HEAR_AUDIO_NOW",
   CANCEL_OVERRIDE = "CANCEL_OVERRIDE",
 
-  // Service Worker → Offscreen
+  // Service Worker → Audio Page
   INIT_CAPTURE = "INIT_CAPTURE",
   DESTROY_CAPTURE = "DESTROY_CAPTURE",
   SET_GAIN_OFFSCREEN = "SET_GAIN_OFFSCREEN",
 
-  // Offscreen → Service Worker (responses / events)
+  // Audio Page → Service Worker
+  // Sent when the audio page has loaded and its message listener is registered.
+  // Resent a couple of times so a service worker that (re)starts mid-load still
+  // observes it.
+  AUDIO_PAGE_READY = "AUDIO_PAGE_READY",
+
+  // Service Worker → Audio Page
+  // Round-trip the SW uses after a (re)start to confirm an already-open audio
+  // page is still alive and listening. The page answers { ok: true }.
+  AUDIO_PAGE_PING = "AUDIO_PAGE_PING",
+
+  // Audio Page → Service Worker (responses / events)
   CAPTURE_STARTED = "CAPTURE_STARTED",
   CAPTURE_STOPPED = "CAPTURE_STOPPED",
   CAPTURE_ERROR = "CAPTURE_ERROR",
@@ -57,6 +68,10 @@ export interface CancelOverrideMsg {
 
 export interface GetStatusMsg {
   type: MessageType.GET_STATUS;
+}
+
+export interface AudioPageReadyMsg {
+  type: MessageType.AUDIO_PAGE_READY;
 }
 
 export interface InitCaptureMsg {
