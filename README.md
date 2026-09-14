@@ -49,6 +49,33 @@ npm run watch
 
 Then reload the extension at `chrome://extensions` after each rebuild.
 
+## Headless smoke test (M1)
+
+`test/smoke-test.mjs` drives the built extension via CDP (no test dependencies;
+Node 20+ built-in fetch/WebSocket):
+
+```bash
+# 1. Build
+npm run build
+
+# 2. Point CHROME_PATH at a Chrome for Testing (or dev/beta/canary) binary and run
+CHROME_PATH="/path/to/chrome.exe" npm test
+```
+
+Requirements & caveats:
+
+- **Stable Google Chrome cannot run this** — it ignores `--load-extension`. Use
+  [Chrome for Testing](https://googlechromelabs.github.io/chrome-for-testing/)
+  (a standalone ~200 MB download) or a dev/beta/canary channel build.
+- Chrome requires the extension to be **user-invoked on the target tab** before
+  tab capture (anti-abuse gate, needs a real click). Headless therefore verifies
+  the chain up to that gate — extension loads, popup works, the hidden audio page
+  opens, `tabCapture.capture()` is invoked — and **skips** the
+  capture-dependent checks. Expected output: several `PASS`, several `SKIP
+  (human-only)`, `0 failed` (exit code 0).
+- The full mute/level/override flow is covered by the manual checklist below
+  (click the Muter popup on the tab — that click *is* the required invocation).
+
 ## Project Structure
 
 ```

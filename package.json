@@ -6,7 +6,8 @@
   "scripts": {
     "build": "node build.mjs",
     "watch": "node build.mjs --watch",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "test": "node test/smoke-test.mjs"
   },
   "devDependencies": {
     "esbuild": "^0.25.0",
